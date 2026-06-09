@@ -371,6 +371,27 @@
             border-radius: 20px;
             margin-top: 1rem;
         }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        .filter-btn {
+            padding: 0.5rem 1.5rem;
+            border-radius: 40px;
+            background: white;
+            border: 1px solid #e0d4c8;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .filter-btn.active, .filter-btn:hover {
+            background: #b87c4f;
+            color: white;
+            border-color: #b87c4f;
+        }
     </style>
 </head>
 <body>
@@ -469,12 +490,84 @@
         </div>
     </div>
 
-    <script src="config.js"></script>
-    
     <script>
-        // Global variables
-        let currentMakerProducts = [];
-        
+        // ============ EXPANDED PRODUCT DATABASE (35+ Products) ============
+        const allProducts = [
+            // Mugs & Cups (8 products)
+            { id: 1, name: "Ember Mug", price: 68, maker: "Elena Wolf", makerId: 1, location: "Oregon", description: "Wheel-thrown stoneware mug with volcanic glaze finish. Holds 12oz.", longDescription: "Each Ember Mug is uniquely crafted on the potter's wheel, featuring a reactive glaze that creates subtle variations in color.", images: ["https://images.pexels.com/photos/305361/pexels-photo-305361.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "mugs", arEnabled: true, featured: true, material: "Stoneware", dimensions: "4.5″ H x 3.5″ W", care: "Dishwasher safe" },
+            { id: 2, name: "Stoneware Bowl Set", price: 94, maker: "James Rivera", makerId: 2, location: "Vermont", description: "Set of 4 nesting bowls with speckled oatmeal glaze.", images: ["https://images.pexels.com/photos/169190/pexels-photo-169190.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "bowls", arEnabled: true, featured: true, material: "Speckled stoneware", dimensions: "Set of 4", care: "Dishwasher safe" },
+            { id: 3, name: "Speckled Plate", price: 42, maker: "Maya Chen", makerId: 3, location: "BC, Canada", description: "Slip-cast dinner plate with organic speckled finish.", images: ["https://images.pexels.com/photos/950241/pexels-photo-950241.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "plates", arEnabled: false, featured: true, material: "Speckled clay", dimensions: "10.5″ D", care: "Dishwasher safe" },
+            { id: 4, name: "Rustic Vase", price: 79, maker: "Sam Greywolf", makerId: 4, location: "New Mexico", description: "Hand-coiled vessel with native-inspired carved texture.", images: ["https://images.pexels.com/photos/1783309/pexels-photo-1783309.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "vases", arEnabled: true, featured: true, material: "Terracotta", dimensions: "8″ H", care: "Hand wash only" },
+            { id: 5, name: "Morning Ritual Set", price: 124, maker: "Elena Wolf", makerId: 1, location: "Oregon", description: "Complete coffee set: mug + saucer + spoon rest.", images: ["https://images.pexels.com/photos/1628818/pexels-photo-1628818.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "sets", arEnabled: false, featured: true, material: "Stoneware", dimensions: "Gift boxed", care: "Dishwasher safe" },
+            { id: 6, name: "Nordic Mug", price: 58, maker: "David Kim", makerId: 6, location: "California", description: "Minimalist porcelain mug with matte finish.", images: ["https://images.pexels.com/photos/2069054/pexels-photo-2069054.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "mugs", arEnabled: true, featured: false, material: "Porcelain", dimensions: "4″ H", care: "Microwave safe" },
+            { id: 7, name: "Terracotta Planter", price: 45, maker: "Sophie Martin", makerId: 7, location: "Montreal", description: "Hand-thrown planter with drainage hole.", images: ["https://images.pexels.com/photos/1250485/pexels-photo-1250485.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "planters", arEnabled: true, featured: false, material: "Terracotta", dimensions: "6″ H", care: "Indoor use" },
+            { id: 8, name: "Blue Speckled Mug", price: 52, maker: "Patricia Okafor", makerId: 5, location: "Georgia", description: "Hand-painted blue speckled mug.", images: ["https://images.pexels.com/photos/1412048/pexels-photo-1412048.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "mugs", arEnabled: true, featured: false, material: "Stoneware", dimensions: "4.2″ H", care: "Dishwasher safe" },
+            { id: 9, name: "Pasta Bowl", price: 38, maker: "James Rivera", makerId: 2, location: "Vermont", description: "Deep bowl perfect for pasta or soup.", images: ["https://images.pexels.com/photos/1441124/pexels-photo-1441124.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "bowls", arEnabled: false, featured: false, material: "Stoneware", dimensions: "8″ D", care: "Microwave safe" },
+            { id: 10, name: "Dinner Plate Set", price: 120, maker: "Maya Chen", makerId: 3, location: "BC, Canada", description: "Set of 6 dinner plates, minimalist design.", images: ["https://images.pexels.com/photos/1049656/pexels-photo-1049656.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "sets", arEnabled: false, featured: false, material: "Porcelain", dimensions: "10″ D each", care: "Dishwasher safe" },
+            { id: 11, name: "Honey Pot", price: 32, maker: "Elena Wolf", makerId: 1, location: "Oregon", description: "Charming honey pot with wooden dipper.", images: ["https://images.pexels.com/photos/3755706/pexels-photo-3755706.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Stoneware", dimensions: "5″ H", care: "Hand wash" },
+            { id: 12, name: "Sake Set", price: 68, maker: "Yuki Tanaka", makerId: 9, location: "Washington", description: "Traditional Japanese sake set (1 bottle + 4 cups).", images: ["https://images.pexels.com/photos/1420705/pexels-photo-1420705.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "sets", arEnabled: true, featured: false, material: "Porcelain", dimensions: "Set of 5", care: "Hand wash" },
+            { id: 13, name: "Butter Dish", price: 35, maker: "Sophie Martin", makerId: 7, location: "Montreal", description: "Covered butter dish with textured finish.", images: ["https://images.pexels.com/photos/2786740/pexels-photo-2786740.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Stoneware", dimensions: "7″ L", care: "Dishwasher safe" },
+            { id: 14, name: "Espresso Cups", price: 45, maker: "Carlos Mendez", makerId: 8, location: "Texas", description: "Set of 4 colorful espresso cups.", images: ["https://images.pexels.com/photos/851555/pexels-photo-851555.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "mugs", arEnabled: true, featured: false, material: "Earthenware", dimensions: "2.5″ H", care: "Hand wash" },
+            { id: 15, name: "Zen Water Fountain", price: 145, maker: "David Kim", makerId: 6, location: "California", description: "Tabletop ceramic fountain for relaxation.", images: ["https://images.pexels.com/photos/210093/pexels-photo-210093.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "decor", arEnabled: true, featured: false, material: "Porcelain", dimensions: "10″ H", care: "Clean pump monthly" },
+            { id: 16, name: "Succulent Planter", price: 28, maker: "Luis Fernandez", makerId: 12, location: "Florida", description: "Small planter for succulents or cacti.", images: ["https://images.pexels.com/photos/1192358/pexels-photo-1192358.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "planters", arEnabled: true, featured: false, material: "Terracotta", dimensions: "3″ H", care: "Drainage hole included" },
+            { id: 17, name: "Teapot (32oz)", price: 89, maker: "Elena Wolf", makerId: 1, location: "Oregon", description: "Hand-thrown teapot with built-in strainer.", images: ["https://images.pexels.com/photos/1378460/pexels-photo-1378460.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: true, featured: true, material: "Stoneware", dimensions: "7″ H", care: "Hand wash" },
+            { id: 18, name: "Serving Platter", price: 65, maker: "Maya Chen", makerId: 3, location: "BC, Canada", description: "Large oval platter for entertaining.", images: ["https://images.pexels.com/photos/650235/pexels-photo-650235.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "plates", arEnabled: false, featured: false, material: "Porcelain", dimensions: "14″ L", care: "Dishwasher safe" },
+            { id: 19, name: "Salt Pig", price: 29, maker: "Marcus Williams", makerId: 10, location: "Illinois", description: "Kitchen salt cellar with lid.", images: ["https://images.pexels.com/photos/910876/pexels-photo-910876.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Stoneware", dimensions: "4″ H", care: "Hand wash" },
+            { id: 20, name: "Candle Holder", price: 24, maker: "Emma Thompson", makerId: 11, location: "Massachusetts", description: "Hand-carved candle holder for taper candles.", images: ["https://images.pexels.com/photos/437164/pexels-photo-437164.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "decor", arEnabled: true, featured: false, material: "Stoneware", dimensions: "3″ H", care: "Wipe clean" },
+            { id: 21, name: "Oil Cruet", price: 38, maker: "James Rivera", makerId: 2, location: "Vermont", description: "Olive oil dispenser with pour spout.", images: ["https://images.pexels.com/photos/1400140/pexels-photo-1400140.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Stoneware", dimensions: "6″ H", care: "Hand wash" },
+            { id: 22, name: "Fruit Bowl", price: 48, maker: "Patricia Okafor", makerId: 5, location: "Georgia", description: "Large ceramic fruit bowl with vibrant pattern.", images: ["https://images.pexels.com/photos/2786740/pexels-photo-2786740.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "bowls", arEnabled: true, featured: false, material: "Earthenware", dimensions: "9″ D", care: "Hand wash" },
+            { id: 23, name: "Coffee Dripper", price: 42, maker: "David Kim", makerId: 6, location: "California", description: "Pour-over coffee dripper (V60 style).", images: ["https://images.pexels.com/photos/851555/pexels-photo-851555.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Porcelain", dimensions: "4″ D", care: "Dishwasher safe" },
+            { id: 24, name: "Garlic Keeper", price: 26, maker: "Sophie Martin", makerId: 7, location: "Montreal", description: "Vented garlic storage jar.", images: ["https://images.pexels.com/photos/539451/pexels-photo-539451.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Stoneware", dimensions: "4″ H", care: "Hand wash" },
+            { id: 25, name: "Taco Holder", price: 34, maker: "Carlos Mendez", makerId: 8, location: "Texas", description: "Stand for 4 tacos, colorful design.", images: ["https://images.pexels.com/photos/103103/pexels-photo-103103.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Earthenware", dimensions: "6″ L", care: "Dishwasher safe" },
+            { id: 26, name: "Ring Dish", price: 18, maker: "Emma Thompson", makerId: 11, location: "Massachusetts", description: "Small dish for jewelry by the sink.", images: ["https://images.pexels.com/photos/1537423/pexels-photo-1537423.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "decor", arEnabled: false, featured: false, material: "Porcelain", dimensions: "3″ D", care: "Hand wash" },
+            { id: 27, name: "Trinket Box", price: 32, maker: "Sam Greywolf", makerId: 4, location: "New Mexico", description: "Small lidded box for treasures.", images: ["https://images.pexels.com/photos/194094/pexels-photo-194094.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "decor", arEnabled: false, featured: false, material: "Terracotta", dimensions: "3″ H", care: "Wipe clean" },
+            { id: 28, name: "Mortar & Pestle", price: 58, maker: "Marcus Williams", makerId: 10, location: "Illinois", description: "Functional ceramic mortar and pestle.", images: ["https://images.pexels.com/photos/1192358/pexels-photo-1192358.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Stoneware", dimensions: "5″ D", care: "Hand wash" },
+            { id: 29, name: "Yunomi Tea Cup", price: 24, maker: "Yuki Tanaka", makerId: 9, location: "Washington", description: "Traditional Japanese tea cup.", images: ["https://images.pexels.com/photos/1412048/pexels-photo-1412048.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "mugs", arEnabled: true, featured: false, material: "Porcelain", dimensions: "3″ H", care: "Hand wash" },
+            { id: 30, name: "Lidded Cookie Jar", price: 52, maker: "Elena Wolf", makerId: 1, location: "Oregon", description: "Large cookie jar with wooden lid.", images: ["https://images.pexels.com/photos/3755706/pexels-photo-3755706.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Stoneware", dimensions: "8″ H", care: "Hand wash" },
+            { id: 31, name: "Spoon Rest", price: 16, maker: "Maya Chen", makerId: 3, location: "BC, Canada", description: "Simple spoon rest for stovetop.", images: ["https://images.pexels.com/photos/650235/pexels-photo-650235.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Porcelain", dimensions: "5″ L", care: "Dishwasher safe" },
+            { id: 32, name: "Bud Vase", price: 22, maker: "Sophie Martin", makerId: 7, location: "Montreal", description: "Small vase for single flower.", images: ["https://images.pexels.com/photos/1250485/pexels-photo-1250485.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "vases", arEnabled: true, featured: false, material: "Stoneware", dimensions: "4″ H", care: "Hand wash" },
+            { id: 33, name: "Sushi Set", price: 78, maker: "Yuki Tanaka", makerId: 9, location: "Washington", description: "Complete sushi set (plate + soy dishes + chopstick rest).", images: ["https://images.pexels.com/photos/1420705/pexels-photo-1420705.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "sets", arEnabled: true, featured: false, material: "Porcelain", dimensions: "Set of 7", care: "Hand wash" },
+            { id: 34, name: "Cream & Sugar", price: 38, maker: "James Rivera", makerId: 2, location: "Vermont", description: "Creamer and sugar bowl set.", images: ["https://images.pexels.com/photos/1441124/pexels-photo-1441124.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "sets", arEnabled: false, featured: false, material: "Stoneware", dimensions: "Set of 2", care: "Dishwasher safe" },
+            { id: 35, name: "Pitcher (64oz)", price: 72, maker: "Elena Wolf", makerId: 1, location: "Oregon", description: "Large serving pitcher for water or lemonade.", images: ["https://images.pexels.com/photos/1628818/pexels-photo-1628818.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: true, featured: false, material: "Stoneware", dimensions: "9″ H", care: "Dishwasher safe" }
+        ];
+
+        // ============ EXPANDED ARTISANS (15 Artisans) ============
+        const expandedMakers = [
+            { id: 1, name: "Elena Wolf", location: "Portland, OR", specialty: "Wood-fired stoneware", experience: "15 years", avatar: "https://randomuser.me/api/portraits/women/68.jpg", story: "Elena discovered pottery while studying environmental science. She now runs a solar-powered studio where every piece is fired in a hand-built wood kiln." },
+            { id: 2, name: "James Rivera", location: "Burlington, VT", specialty: "Glaze alchemy", experience: "22 years", avatar: "https://randomuser.me/api/portraits/men/32.jpg", story: "Former chemist turned potter, known for developing unique crystalline glazes. His work is collected by galleries throughout the Northeast." },
+            { id: 3, name: "Maya Chen", location: "Vancouver, BC", specialty: "Minimalist slipware", experience: "8 years", avatar: "https://randomuser.me/api/portraits/women/44.jpg", story: "Blends traditional Chinese ceramic techniques with West Coast minimalism. Her work is defined by clean lines and subtle textures." },
+            { id: 4, name: "Sam Greywolf", location: "Santa Fe, NM", specialty: "Native inspired textures", experience: "30 years", avatar: "https://randomuser.me/api/portraits/men/52.jpg", story: "Cherokee descent, his pieces are held in permanent collections at the Heard Museum and IAIA." },
+            { id: 5, name: "Patricia Okafor", location: "Atlanta, GA", specialty: "Afrocentric patterns", experience: "12 years", avatar: "https://randomuser.me/api/portraits/women/89.jpg", story: "Celebrates African heritage through contemporary ceramic forms. Her vibrant patterns tell stories of diaspora and connection." },
+            { id: 6, name: "David Kim", location: "Los Angeles, CA", specialty: "Porcelain minimalism", experience: "18 years", avatar: "https://randomuser.me/api/portraits/men/45.jpg", story: "Zen-inspired pieces with perfect white porcelain. His work represents the beauty of simplicity and negative space." },
+            { id: 7, name: "Sophie Martin", location: "Montreal, QC", specialty: "Textured stoneware", experience: "10 years", avatar: "https://randomuser.me/api/portraits/women/23.jpg", story: "Creates pieces that feel like smooth river stones. Each piece is carved by hand to create unique organic textures." },
+            { id: 8, name: "Carlos Mendez", location: "Austin, TX", specialty: "Colorful maiolica", experience: "14 years", avatar: "https://randomuser.me/api/portraits/men/67.jpg", story: "Bright, hand-painted Italian-inspired ceramics. His work brings joy and color to every table." },
+            { id: 9, name: "Yuki Tanaka", location: "Seattle, WA", specialty: "Raku firing", experience: "20 years", avatar: "https://randomuser.me/api/portraits/women/56.jpg", story: "Master of the dramatic raku firing process. Each piece has unique crackle patterns and metallic lusters." },
+            { id: 10, name: "Marcus Williams", location: "Chicago, IL", specialty: "Sculptural vessels", experience: "9 years", avatar: "https://randomuser.me/api/portraits/men/91.jpg", story: "Functional art that doubles as sculpture. His pieces blur the line between pottery and fine art." },
+            { id: 11, name: "Emma Thompson", location: "Boston, MA", specialty: "Nerikomi", experience: "11 years", avatar: "https://randomuser.me/api/portraits/women/17.jpg", story: "Japanese marbling technique with colored clays. Each piece has a unique pattern that never repeats." },
+            { id: 12, name: "Luis Fernandez", location: "Miami, FL", specialty: "Caribbean inspired", experience: "7 years", avatar: "https://randomuser.me/api/portraits/men/33.jpg", story: "Bright colors and tropical patterns inspired by Caribbean culture and nature." },
+            { id: 13, name: "Anna Kowalski", location: "Detroit, MI", specialty: "Industrial chic", experience: "13 years", avatar: "https://randomuser.me/api/portraits/women/62.jpg", story: "Urban-inspired pieces with industrial aesthetic. Her work celebrates Detroit's manufacturing heritage." },
+            { id: 14, name: "Thomas Green", location: "Nashville, TN", specialty: "Southern folk", experience: "25 years", avatar: "https://randomuser.me/api/portraits/men/76.jpg", story: "Traditional southern pottery techniques passed down for 4 generations in his family." },
+            { id: 15, name: "Maria Flores", location: "Phoenix, AZ", specialty: "Desert colors", experience: "16 years", avatar: "https://randomuser.me/api/portraits/women/38.jpg", story: "Her glazes capture the stunning colors of the Sonoran Desert at sunset." }
+        ];
+
+        // Add helper functions
+        function getProductsByMaker(makerId) {
+            return allProducts.filter(p => p.makerId === makerId);
+        }
+
+        function getFeaturedProducts() {
+            return allProducts.filter(p => p.featured === true);
+        }
+
+        function getARProducts() {
+            return allProducts.filter(p => p.arEnabled === true);
+        }
+
+        function getProductsByCategory(category) {
+            if (category === 'all') return allProducts;
+            return allProducts.filter(p => p.category === category);
+        }
+
         // Shopping cart state
         let cart = JSON.parse(localStorage.getItem('clayCart') || '[]');
         
@@ -486,7 +579,7 @@
         }
         
         function addToCart(productId) {
-            const product = window.CONFIG?.getProductById(productId);
+            const product = allProducts.find(p => p.id === productId);
             if (!product) return;
             
             const existing = cart.find(item => item.id === productId);
@@ -511,7 +604,7 @@
         }
         
         function showProductDetails(productId) {
-            const product = window.CONFIG?.getProductById(productId);
+            const product = allProducts.find(p => p.id === productId);
             if (!product) return;
             
             document.getElementById('modal-product-title').textContent = product.name;
@@ -520,7 +613,7 @@
                 <p><strong>Price:</strong> $${product.price}</p>
                 <p><strong>Maker:</strong> ${product.maker}</p>
                 <p><strong>Location:</strong> ${product.location}</p>
-                <p><strong>Description:</strong> ${product.description}</p>
+                <p><strong>Description:</strong> ${product.longDescription || product.description}</p>
                 <p><strong>Materials:</strong> ${product.material}</p>
                 <p><strong>Dimensions:</strong> ${product.dimensions}</p>
                 <p><strong>Care:</strong> ${product.care}</p>
@@ -531,12 +624,18 @@
         }
         
         function showMakerCollection(makerId) {
-            const maker = window.CONFIG?.getMakerById(makerId);
-            const products = window.CONFIG?.getProductsByMaker(makerId);
-            currentMakerProducts = products;
+            const maker = expandedMakers.find(m => m.id === makerId);
+            const products = getProductsByMaker(makerId);
             
-            document.getElementById('modal-product-title').textContent = `${maker.name}'s Collection`;
+            document.getElementById('modal-product-title').textContent = `${maker.name}'s Collection (${products.length} pieces)`;
             document.getElementById('modal-product-details').innerHTML = `
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <img src="${maker.avatar}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+                    <p style="margin-top: 0.5rem;"><strong>${maker.location}</strong> | ${maker.experience}</p>
+                    <p>${maker.story}</p>
+                </div>
+                <hr>
+                <h3 style="margin: 1rem 0;">Available Pieces:</h3>
                 <div class="grid" style="grid-template-columns: 1fr 1fr;">
                     ${products.map(product => `
                         <div class="card" style="cursor: pointer;" onclick="showProductDetails(${product.id})">
@@ -551,10 +650,6 @@
                 </div>
             `;
             document.getElementById('product-modal').style.display = 'flex';
-        }
-        
-        function openProductModal() {
-            // Kept for compatibility
         }
         
         function closeProductModal() {
@@ -581,7 +676,7 @@
             
             let total = 0;
             cartItemsDiv.innerHTML = cart.map(item => {
-                const product = window.CONFIG?.getProductById(item.id);
+                const product = allProducts.find(p => p.id === item.id);
                 if (!product) return '';
                 const itemTotal = product.price * item.quantity;
                 total += itemTotal;
@@ -615,66 +710,100 @@
                 </div>
             `;
             
-            // Add event listeners for cart buttons
             document.querySelectorAll('.cart-qty-btn').forEach(btn => {
-                btn.removeEventListener('click', handleCartQty);
-                btn.addEventListener('click', handleCartQty);
+                btn.onclick = () => {
+                    const id = parseInt(btn.dataset.id);
+                    const change = parseInt(btn.dataset.change);
+                    const item = cart.find(i => i.id === id);
+                    if (item) {
+                        item.quantity += change;
+                        if (item.quantity <= 0) {
+                            cart = cart.filter(i => i.id !== id);
+                        }
+                        updateCartCount();
+                        renderCartModal();
+                    }
+                };
             });
             
             document.querySelectorAll('.cart-remove-btn').forEach(btn => {
-                btn.removeEventListener('click', handleCartRemove);
-                btn.addEventListener('click', handleCartRemove);
+                btn.onclick = () => {
+                    const id = parseInt(btn.dataset.id);
+                    cart = cart.filter(i => i.id !== id);
+                    updateCartCount();
+                    renderCartModal();
+                };
             });
         }
         
-        function handleCartQty(e) {
-            const id = parseInt(e.target.dataset.id);
-            const change = parseInt(e.target.dataset.change);
-            const item = cart.find(i => i.id === id);
-            if (item) {
-                item.quantity += change;
-                if (item.quantity <= 0) {
-                    cart = cart.filter(i => i.id !== id);
-                }
-                updateCartCount();
-                renderCartModal();
-            }
-        }
-        
-        function handleCartRemove(e) {
-            const id = parseInt(e.target.dataset.id);
-            cart = cart.filter(i => i.id !== id);
-            updateCartCount();
-            renderCartModal();
-        }
-        
-        // Expanded Artisans (12 artisans)
-        const expandedMakers = [
-            { id: 1, name: "Elena Wolf", location: "Portland, OR", specialty: "Wood-fired stoneware", experience: "15 years", avatar: "https://randomuser.me/api/portraits/women/68.jpg", story: "Elena discovered pottery while studying environmental science. She now runs a solar-powered studio." },
-            { id: 2, name: "James Rivera", location: "Burlington, VT", specialty: "Glaze alchemy", experience: "22 years", avatar: "https://randomuser.me/api/portraits/men/32.jpg", story: "Former chemist turned potter, known for crystalline glazes." },
-            { id: 3, name: "Maya Chen", location: "Vancouver, BC", specialty: "Minimalist slipware", experience: "8 years", avatar: "https://randomuser.me/api/portraits/women/44.jpg", story: "Blends traditional Chinese techniques with West Coast minimalism." },
-            { id: 4, name: "Sam Greywolf", location: "Santa Fe, NM", specialty: "Native inspired textures", experience: "30 years", avatar: "https://randomuser.me/api/portraits/men/52.jpg", story: "Cherokee descent, pieces in Heard Museum permanent collection." },
-            { id: 5, name: "Patricia Okafor", location: "Atlanta, GA", specialty: "Afrocentric patterns", experience: "12 years", avatar: "https://randomuser.me/api/portraits/women/89.jpg", story: "Celebrates African heritage through contemporary ceramic forms." },
-            { id: 6, name: "David Kim", location: "Los Angeles, CA", specialty: "Porcelain minimalism", experience: "18 years", avatar: "https://randomuser.me/api/portraits/men/45.jpg", story: "Zen-inspired pieces with perfect white porcelain." },
-            { id: 7, name: "Sophie Martin", location: "Montreal, QC", specialty: "Textured stoneware", experience: "10 years", avatar: "https://randomuser.me/api/portraits/women/23.jpg", story: "Creates pieces that feel like smooth river stones." },
-            { id: 8, name: "Carlos Mendez", location: "Austin, TX", specialty: "Colorful maiolica", experience: "14 years", avatar: "https://randomuser.me/api/portraits/men/67.jpg", story: "Bright, hand-painted Italian-inspired ceramics." },
-            { id: 9, name: "Yuki Tanaka", location: "Seattle, WA", specialty: "Raku firing", experience: "20 years", avatar: "https://randomuser.me/api/portraits/women/56.jpg", story: "Master of the dramatic raku firing process." },
-            { id: 10, name: "Marcus Williams", location: "Chicago, IL", specialty: "Sculptural vessels", experience: "9 years", avatar: "https://randomuser.me/api/portraits/men/91.jpg", story: "Functional art that doubles as sculpture." },
-            { id: 11, name: "Emma Thompson", location: "Boston, MA", specialty: "Nerikomi", experience: "11 years", avatar: "https://randomuser.me/api/portraits/women/17.jpg", story: "Japanese marbling technique with colored clays." },
-            { id: 12, name: "Luis Fernandez", location: "Miami, FL", specialty: "Caribbean inspired", experience: "7 years", avatar: "https://randomuser.me/api/portraits/men/33.jpg", story: "Bright colors and tropical patterns." }
-        ];
-        
         // Page content renderers
+        function renderProductGrid(products, showFilter = false) {
+            if (!products || products.length === 0) {
+                return '<div class="loading">No products found.</div>';
+            }
+            
+            let filterHtml = '';
+            if (showFilter) {
+                const categories = ['all', 'mugs', 'bowls', 'plates', 'vases', 'sets', 'kitchenware', 'decor', 'planters'];
+                filterHtml = `
+                    <div class="filter-buttons">
+                        ${categories.map(cat => `<button class="filter-btn ${cat === 'all' ? 'active' : ''}" data-category="${cat}">${cat.charAt(0).toUpperCase() + cat.slice(1)}</button>`).join('')}
+                    </div>
+                `;
+            }
+            
+            return filterHtml + `
+                <div class="grid">
+                    ${products.map(product => `
+                        <div class="card" data-category="${product.category}">
+                            <img class="card-img" src="${product.images[0]}" alt="${product.name}" loading="lazy" onerror="this.src='https://placehold.co/400x400?text=Ceramic+Art'">
+                            <div class="card-content">
+                                <div class="card-title">${product.name}</div>
+                                <div class="price">$${product.price}</div>
+                                <div class="maker"><i class="fas fa-palette"></i> ${product.maker}</div>
+                                ${product.arEnabled ? '<div class="ar-badge"><i class="fas fa-vr-cardboard"></i> AR compatible</div>' : ''}
+                                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                    <button class="btn-outline btn view-product" style="padding: 0.4rem 1rem; font-size:0.8rem;" data-id="${product.id}">View Details</button>
+                                    <button class="btn-primary btn add-to-cart" style="padding: 0.4rem 1rem; font-size:0.8rem;" data-id="${product.id}">Add to Cart</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function renderMakersGrid(makers) {
+            if (!makers || makers.length === 0) {
+                return '<div class="loading">No makers found.</div>';
+            }
+            
+            return `
+                <div class="makers-grid">
+                    ${makers.map(maker => `
+                        <div class="maker-card">
+                            <img class="maker-avatar" src="${maker.avatar}" alt="${maker.name}" onerror="this.src='https://placehold.co/120x120'">
+                            <h3 style="font-weight:600;">${maker.name}</h3>
+                            <p><i class="fas fa-map-marker-alt"></i> ${maker.location}</p>
+                            <p style="font-size:0.85rem;">${maker.specialty}</p>
+                            <p style="font-size:0.75rem; margin-top: 0.5rem; color: #b87c4f;">${maker.experience}</p>
+                            <button class="view-maker" style="margin-top: 0.8rem; background: none; border: none; color: #b87c4f; cursor: pointer;" data-id="${maker.id}">See collection (${getProductsByMaker(maker.id).length} pieces) →</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
         const pages = {
             home: function() {
                 return `
                     <section class="hero">
                         <div class="container">
                             <h1>Earth. Fire. Craft.</h1>
-                            <p>Discover unique handcrafted ceramic tableware from North American artisans. Visualize pieces with AR, and commission custom items for your home.</p>
+                            <p>Discover unique handcrafted ceramic tableware from North American artisans. Browse collections, meet makers, visualize pieces with AR, and commission custom items for your home.</p>
                             <div class="btn-group">
-                                <button class="btn btn-primary" data-page="collections">Shop Now</button>
-                                <button class="btn btn-outline" data-page="ar">Explore in AR</button>
+                                <button class="btn btn-primary" data-page="collections">Shop Now (${allProducts.length} items)</button>
+                                <button class="btn btn-outline" data-page="ar">Explore in AR (${getARProducts().length} items)</button>
                             </div>
                         </div>
                     </section>
@@ -682,17 +811,16 @@
                     <section class="section">
                         <div class="container">
                             <h2 class="section-title">Featured Collections</h2>
-                            <div class="grid" id="featured-grid">
-                                ${renderProductGrid(window.CONFIG?.getFeaturedProducts() || [])}
-                            </div>
+                            ${renderProductGrid(getFeaturedProducts())}
                         </div>
                     </section>
                     
                     <section class="section" style="background: #fff6ef;">
                         <div class="container">
-                            <h2 class="section-title">Meet Our Artisans</h2>
-                            <div class="makers-grid">
-                                ${renderMakersGrid(expandedMakers.slice(0, 6))}
+                            <h2 class="section-title">Meet Our Artisans (${expandedMakers.length} makers)</h2>
+                            ${renderMakersGrid(expandedMakers.slice(0, 8))}
+                            <div style="text-align: center; margin-top: 2rem;">
+                                <button class="btn btn-outline" data-page="artisans">View All ${expandedMakers.length} Artisans →</button>
                             </div>
                         </div>
                     </section>
@@ -701,7 +829,7 @@
                         <div class="container" style="text-align: center; background: #e7d9cf; border-radius: 48px; padding: 3rem 2rem;">
                             <h2 style="font-size: 1.9rem;">See it in your space</h2>
                             <p style="max-width: 600px; margin: 1rem auto;">Point your camera to preview any mug or bowl in augmented reality before you buy.</p>
-                            <button class="btn btn-primary" style="background:#4f2d1a;" data-page="ar"><i class="fas fa-cube"></i> Try AR view</button>
+                            <button class="btn btn-primary" style="background:#4f2d1a;" data-page="ar"><i class="fas fa-cube"></i> Try AR view (${getARProducts().length} pieces)</button>
                             <div style="margin-top: 1rem;"><button class="btn-outline btn" data-page="custom">Commission a custom piece →</button></div>
                         </div>
                     </section>
@@ -709,12 +837,40 @@
             },
             
             collections: function() {
+                let currentCategory = 'all';
+                const renderCollection = (category) => {
+                    const filtered = getProductsByCategory(category);
+                    document.getElementById('collection-grid').innerHTML = renderProductGrid(filtered, false);
+                    document.querySelectorAll('.filter-btn').forEach(btn => {
+                        if (btn.dataset.category === category) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    });
+                };
+                
+                setTimeout(() => {
+                    const filterContainer = document.querySelector('.filter-buttons');
+                    if (filterContainer) {
+                        filterContainer.querySelectorAll('.filter-btn').forEach(btn => {
+                            btn.onclick = () => {
+                                currentCategory = btn.dataset.category;
+                                renderCollection(currentCategory);
+                            };
+                        });
+                    }
+                }, 100);
+                
                 return `
                     <div class="container">
-                        <h1 class="section-title">All Collections</h1>
-                        <div class="grid">
-                            ${renderProductGrid(window.CONFIG?.products || [])}
+                        <h1 class="section-title">All Collections (${allProducts.length} pieces)</h1>
+                        <div class="filter-buttons">
+                            ${['all', 'mugs', 'bowls', 'plates', 'vases', 'sets', 'kitchenware', 'decor', 'planters'].map(cat => 
+                                `<button class="filter-btn ${cat === 'all' ? 'active' : ''}" data-category="${cat}">${cat.charAt(0).toUpperCase() + cat.slice(1)} (${getProductsByCategory(cat).length})</button>`
+                            ).join('')}
                         </div>
+                        <div id="collection-grid">${renderProductGrid(allProducts, false)}</div>
                     </div>
                 `;
             },
@@ -722,10 +878,8 @@
             artisans: function() {
                 return `
                     <div class="container">
-                        <h1 class="section-title">Our Artisans</h1>
-                        <div class="makers-grid">
-                            ${renderMakersGrid(expandedMakers)}
-                        </div>
+                        <h1 class="section-title">Our Artisans (${expandedMakers.length} talented makers)</h1>
+                        ${renderMakersGrid(expandedMakers)}
                     </div>
                 `;
             },
@@ -736,7 +890,7 @@
                         <div style="max-width: 800px; margin: 0 auto; padding: 2rem;">
                             <h1 class="section-title">Commission Custom Ceramics</h1>
                             <div style="background: white; border-radius: 24px; padding: 2rem; margin-top: 2rem;">
-                                <p style="font-size: 1.1rem; margin-bottom: 1rem;">Work directly with our artisans to create something uniquely yours.</p>
+                                <p style="font-size: 1.1rem; margin-bottom: 1rem;">Work directly with our ${expandedMakers.length} artisans to create something uniquely yours.</p>
                                 <h3>Process:</h3>
                                 <ul style="margin: 1rem 0 1rem 2rem;">
                                     <li>Initial consultation (virtual or in-studio)</li>
@@ -748,6 +902,7 @@
                                 </ul>
                                 <p><strong>Timeline:</strong> 4-16 weeks depending on complexity</p>
                                 <p><strong>Starting budget:</strong> $150+</p>
+                                <p><strong>Available Artisans:</strong> ${expandedMakers.filter(m => [1,2,4,5,6,7,8,9,10,11,12,13,14,15].includes(m.id)).length} artisans accept custom commissions</p>
                                 <button class="btn btn-primary" style="margin-top: 2rem; width: 100%;" id="start-custom">Start Your Commission →</button>
                             </div>
                         </div>
@@ -756,14 +911,12 @@
             },
             
             ar: function() {
-                const arProducts = window.CONFIG?.getARProducts() || [];
+                const arProducts = getARProducts();
                 return `
                     <div class="container">
-                        <h1 class="section-title">AR-Enabled Pieces</h1>
+                        <h1 class="section-title">AR-Enabled Pieces (${arProducts.length} items)</h1>
                         <p style="text-align: center; margin-bottom: 2rem;">View these pieces in your own space using augmented reality</p>
-                        <div class="grid">
-                            ${renderProductGrid(arProducts)}
-                        </div>
+                        ${renderProductGrid(arProducts)}
                         <div style="text-align: center; margin-top: 3rem; padding: 2rem; background: #e7d9cf; border-radius: 24px;">
                             <i class="fas fa-vr-cardboard" style="font-size: 3rem; margin-bottom: 1rem;"></i>
                             <h3>How to use AR</h3>
@@ -784,6 +937,13 @@
                             <div style="background: white; border-radius: 24px; padding: 2rem;">
                                 <p style="font-size: 1.1rem; margin-bottom: 1rem;">Founded in 2020, Clay & Hearth connects discerning home cooks and collectors with North America's finest ceramic artists.</p>
                                 <p style="margin-bottom: 1rem;">Our mission is to preserve traditional pottery techniques while embracing modern technology like augmented reality to help you discover the perfect piece for your home.</p>
+                                <h3>By the Numbers</h3>
+                                <ul style="margin: 1rem 0 1rem 2rem;">
+                                    <li>${expandedMakers.length} talented artisans</li>
+                                    <li>${allProducts.length} unique handcrafted pieces</li>
+                                    <li>${getARProducts().length} AR-enabled items</li>
+                                    <li>15+ North American locations</li>
+                                </ul>
                                 <h3>Our Values</h3>
                                 <ul style="margin: 1rem 0 1rem 2rem;">
                                     <li>Support living wage for artists</li>
@@ -838,52 +998,11 @@
             }
         };
         
-        function renderProductGrid(products) {
-            if (!products || products.length === 0) {
-                return '<div class="loading">No products found.</div>';
-            }
-            
-            return products.map(product => `
-                <div class="card">
-                    <img class="card-img" src="${product.images[0]}" alt="${product.name}" loading="lazy" onerror="this.src='https://placehold.co/400x400?text=Ceramic+Art'">
-                    <div class="card-content">
-                        <div class="card-title">${product.name}</div>
-                        <div class="price">$${product.price}</div>
-                        <div class="maker"><i class="fas fa-palette"></i> ${product.maker}</div>
-                        ${product.arEnabled ? '<div class="ar-badge"><i class="fas fa-vr-cardboard"></i> AR compatible</div>' : ''}
-                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
-                            <button class="btn-outline btn view-product" style="padding: 0.4rem 1rem; font-size:0.8rem;" data-id="${product.id}">View Details</button>
-                            <button class="btn-primary btn add-to-cart" style="padding: 0.4rem 1rem; font-size:0.8rem;" data-id="${product.id}">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        function renderMakersGrid(makers) {
-            if (!makers || makers.length === 0) {
-                return '<div class="loading">No makers found.</div>';
-            }
-            
-            return makers.map(maker => `
-                <div class="maker-card">
-                    <img class="maker-avatar" src="${maker.avatar}" alt="${maker.name}" onerror="this.src='https://placehold.co/120x120'">
-                    <h3 style="font-weight:600;">${maker.name}</h3>
-                    <p><i class="fas fa-map-marker-alt"></i> ${maker.location}</p>
-                    <p style="font-size:0.85rem;">${maker.specialty}</p>
-                    <p style="font-size:0.75rem; margin-top: 0.5rem; color: #b87c4f;">${maker.experience}</p>
-                    <button class="view-maker" style="margin-top: 0.8rem; background: none; border: none; color: #b87c4f; cursor: pointer;" data-id="${maker.id}">See collection →</button>
-                </div>
-            `).join('');
-        }
-        
-        // Load a page
         function loadPage(pageName) {
             const renderer = pages[pageName];
             if (renderer) {
                 document.getElementById('app').innerHTML = renderer();
                 
-                // Update active nav state
                 document.querySelectorAll('[data-page]').forEach(el => {
                     if (el.dataset.page === pageName) {
                         el.classList.add('active');
@@ -892,82 +1011,58 @@
                     }
                 });
                 
-                // Re-attach event listeners for dynamic content
                 attachDynamicListeners();
-                
-                // Scroll to top
                 window.scrollTo(0, 0);
             }
         }
         
         function attachDynamicListeners() {
-            // Navigation links
             document.querySelectorAll('[data-page]').forEach(el => {
-                el.removeEventListener('click', handleNavClick);
-                el.addEventListener('click', handleNavClick);
+                el.onclick = (e) => {
+                    const page = e.currentTarget.dataset.page;
+                    if (page) {
+                        e.preventDefault();
+                        loadPage(page);
+                    }
+                };
             });
             
-            // Add to cart buttons
             document.querySelectorAll('.add-to-cart').forEach(btn => {
-                btn.removeEventListener('click', handleAddToCart);
-                btn.addEventListener('click', handleAddToCart);
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(btn.dataset.id);
+                    addToCart(id);
+                };
             });
             
-            // View product buttons
             document.querySelectorAll('.view-product').forEach(btn => {
-                btn.removeEventListener('click', handleViewProduct);
-                btn.addEventListener('click', handleViewProduct);
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(btn.dataset.id);
+                    showProductDetails(id);
+                };
             });
             
-            // View maker buttons
             document.querySelectorAll('.view-maker').forEach(btn => {
-                btn.removeEventListener('click', handleViewMaker);
-                btn.addEventListener('click', handleViewMaker);
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(btn.dataset.id);
+                    showMakerCollection(id);
+                };
             });
             
-            // Custom commission button
             const customBtn = document.getElementById('start-custom');
             if (customBtn) {
-                customBtn.removeEventListener('click', handleCustomCommission);
-                customBtn.addEventListener('click', handleCustomCommission);
+                customBtn.onclick = () => {
+                    showToast('📋 Custom commission request sent! An artisan will contact you within 48 hours.');
+                    setTimeout(() => {
+                        showToast('✨ Check your email for next steps!');
+                    }, 2000);
+                };
             }
         }
         
-        function handleNavClick(e) {
-            const page = e.currentTarget.dataset.page;
-            if (page) {
-                e.preventDefault();
-                loadPage(page);
-            }
-        }
-        
-        function handleAddToCart(e) {
-            e.stopPropagation();
-            const id = parseInt(e.currentTarget.dataset.id);
-            addToCart(id);
-        }
-        
-        function handleViewProduct(e) {
-            e.stopPropagation();
-            const id = parseInt(e.currentTarget.dataset.id);
-            showProductDetails(id);
-        }
-        
-        function handleViewMaker(e) {
-            e.stopPropagation();
-            const id = parseInt(e.currentTarget.dataset.id);
-            showMakerCollection(id);
-        }
-        
-        function handleCustomCommission(e) {
-            e.preventDefault();
-            showToast('📋 Custom commission request sent! An artisan will contact you within 48 hours.');
-            setTimeout(() => {
-                showToast('✨ Check your email for next steps!');
-            }, 2000);
-        }
-        
-        // Make functions global for modal buttons
+        // Make functions global
         window.addToCart = addToCart;
         window.showProductDetails = showProductDetails;
         window.closeProductModal = closeProductModal;
@@ -978,61 +1073,44 @@
         const cartIcon = document.getElementById('cart-icon');
         const cartModal = document.getElementById('cart-modal');
         const checkoutModal = document.getElementById('checkout-modal');
-        const checkoutBtn = document.getElementById('checkout-btn');
         
-        cartIcon.addEventListener('click', () => {
+        cartIcon.onclick = () => {
             renderCartModal();
             cartModal.style.display = 'flex';
-        });
+        };
         
-        if (checkoutBtn) {
-            checkoutBtn.addEventListener('click', () => {
-                if (cart.length === 0) {
-                    showToast('Your cart is empty!');
-                } else {
-                    cartModal.style.display = 'none';
-                    checkoutModal.style.display = 'flex';
-                }
-            });
-        }
+        document.getElementById('checkout-btn').onclick = () => {
+            if (cart.length === 0) {
+                showToast('Your cart is empty!');
+            } else {
+                cartModal.style.display = 'none';
+                checkoutModal.style.display = 'flex';
+            }
+        };
         
-        // Checkout form submission
-        const checkoutForm = document.getElementById('checkout-form');
-        if (checkoutForm) {
-            checkoutForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const name = document.getElementById('full-name')?.value;
-                if (name) {
-                    showToast(`🎉 Thank you ${name}! Your order has been placed.`);
-                    cart = [];
-                    updateCartCount();
-                    checkoutModal.style.display = 'none';
-                    loadPage('home');
-                }
-            });
-        }
+        document.getElementById('checkout-form').onsubmit = (e) => {
+            e.preventDefault();
+            const name = document.getElementById('full-name')?.value;
+            if (name) {
+                showToast(`🎉 Thank you ${name}! Your order has been placed.`);
+                cart = [];
+                updateCartCount();
+                checkoutModal.style.display = 'none';
+                loadPage('home');
+            }
+        };
         
-        // Close modals when clicking outside
-        window.addEventListener('click', (e) => {
+        window.onclick = (e) => {
             if (e.target === cartModal) cartModal.style.display = 'none';
             if (e.target === checkoutModal) checkoutModal.style.display = 'none';
             if (e.target === document.getElementById('product-modal')) closeProductModal();
-        });
+        };
         
-        // Load home page by default
-        if (window.CONFIG) {
-            // Merge expanded makers with config
-            window.CONFIG.makers = expandedMakers;
-            // Add helper for maker products
-            window.CONFIG.getProductsByMaker = function(makerId) {
-                return this.products.filter(p => p.makerId === makerId);
-            };
-        }
-        
+        // Load home page
         loadPage('home');
         updateCartCount();
         
-        console.log('✨ Clay & Hearth fully loaded with all features!');
+        console.log(`✨ Clay & Hearth loaded with ${allProducts.length} products and ${expandedMakers.length} artisans!`);
     </script>
 </body>
 </html>
