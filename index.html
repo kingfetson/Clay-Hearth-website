@@ -369,5 +369,21 @@
     console.log(CONFIG.products);
     console.log(CONFIG.getFeaturedProducts());
 </script>
+    // Example: Replace the static product rendering with config data
+function renderProducts() {
+    const featuredProducts = CONFIG.getFeaturedProducts();
+    const grid = document.getElementById('products-grid');
+    grid.innerHTML = featuredProducts.map(product => `
+        <div class="card">
+            <img class="card-img" src="${product.images[0]}" alt="${product.name}">
+            <div class="card-content">
+                <div class="card-title">${product.name}</div>
+                <div class="price">$${product.price}</div>
+                <div class="maker">${product.maker}, ${product.location}</div>
+                ${product.arEnabled ? '<div class="ar-badge"><i class="fas fa-vr-cardboard"></i> AR compatible</div>' : ''}
+            </div>
+        </div>
+    `).join('');
+}
 </body>
 </html>
