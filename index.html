@@ -275,11 +275,14 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1rem;
+            border-bottom: 2px solid #f0e4d8;
+            padding-bottom: 1rem;
         }
         .close-modal {
             cursor: pointer;
             font-size: 1.8rem;
             color: #999;
+            transition: 0.2s;
         }
         .close-modal:hover {
             color: #333;
@@ -293,19 +296,35 @@
         }
         
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
-            font-weight: 500;
+            font-weight: 600;
+            color: #4d3222;
+        }
+        .form-group label .required {
+            color: #b87c4f;
         }
         .form-group input, .form-group select, .form-group textarea {
             width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #e0d4c8;
-            border-radius: 12px;
+            padding: 0.85rem;
+            border: 2px solid #e0d4c8;
+            border-radius: 16px;
             font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            transition: 0.2s;
+            background: white;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #b87c4f;
+            box-shadow: 0 0 0 3px rgba(184,124,79,0.1);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
         }
         
         .footer {
@@ -392,6 +411,38 @@
             color: white;
             border-color: #b87c4f;
         }
+        
+        /* Custom commission form specific styles */
+        .commission-form-container {
+            background: linear-gradient(135deg, #fff9f5 0%, #fefaf5 100%);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .budget-slider {
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+        .budget-value {
+            display: inline-block;
+            margin-top: 0.5rem;
+            color: #b87c4f;
+            font-weight: bold;
+        }
+        .artisan-select {
+            cursor: pointer;
+        }
+        .form-success {
+            text-align: center;
+            padding: 2rem;
+        }
+        .form-success i {
+            font-size: 4rem;
+            color: #4caf50;
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -431,6 +482,19 @@
                 <span class="close-modal" onclick="closeProductModal()">&times;</span>
             </div>
             <div id="modal-product-details"></div>
+        </div>
+    </div>
+
+    <!-- Custom Commission Modal -->
+    <div id="commission-modal" class="modal">
+        <div class="modal-content commission-form-container">
+            <div class="modal-header">
+                <h2><i class="fas fa-pen-ruler"></i> Start Your Custom Commission</h2>
+                <span class="close-modal" onclick="closeCommissionModal()">&times;</span>
+            </div>
+            <div id="commission-form-content">
+                <!-- Form will be loaded here -->
+            </div>
         </div>
     </div>
 
@@ -493,64 +557,37 @@
     <script>
         // ============ EXPANDED PRODUCT DATABASE (35+ Products) ============
         const allProducts = [
-            // Mugs & Cups (8 products)
-            { id: 1, name: "Ember Mug", price: 68, maker: "Elena Wolf", makerId: 1, location: "Oregon", description: "Wheel-thrown stoneware mug with volcanic glaze finish. Holds 12oz.", longDescription: "Each Ember Mug is uniquely crafted on the potter's wheel, featuring a reactive glaze that creates subtle variations in color.", images: ["https://images.pexels.com/photos/305361/pexels-photo-305361.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "mugs", arEnabled: true, featured: true, material: "Stoneware", dimensions: "4.5″ H x 3.5″ W", care: "Dishwasher safe" },
+            { id: 1, name: "Ember Mug", price: 68, maker: "Elena Wolf", makerId: 1, location: "Oregon", description: "Wheel-thrown stoneware mug with volcanic glaze finish.", images: ["https://images.pexels.com/photos/305361/pexels-photo-305361.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "mugs", arEnabled: true, featured: true, material: "Stoneware", dimensions: "4.5″ H", care: "Dishwasher safe" },
             { id: 2, name: "Stoneware Bowl Set", price: 94, maker: "James Rivera", makerId: 2, location: "Vermont", description: "Set of 4 nesting bowls with speckled oatmeal glaze.", images: ["https://images.pexels.com/photos/169190/pexels-photo-169190.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "bowls", arEnabled: true, featured: true, material: "Speckled stoneware", dimensions: "Set of 4", care: "Dishwasher safe" },
             { id: 3, name: "Speckled Plate", price: 42, maker: "Maya Chen", makerId: 3, location: "BC, Canada", description: "Slip-cast dinner plate with organic speckled finish.", images: ["https://images.pexels.com/photos/950241/pexels-photo-950241.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "plates", arEnabled: false, featured: true, material: "Speckled clay", dimensions: "10.5″ D", care: "Dishwasher safe" },
-            { id: 4, name: "Rustic Vase", price: 79, maker: "Sam Greywolf", makerId: 4, location: "New Mexico", description: "Hand-coiled vessel with native-inspired carved texture.", images: ["https://images.pexels.com/photos/1783309/pexels-photo-1783309.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "vases", arEnabled: true, featured: true, material: "Terracotta", dimensions: "8″ H", care: "Hand wash only" },
+            { id: 4, name: "Rustic Vase", price: 79, maker: "Sam Greywolf", makerId: 4, location: "New Mexico", description: "Hand-coiled vessel with native-inspired carved texture.", images: ["https://images.pexels.com/photos/1783309/pexels-photo-1783309.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "vases", arEnabled: true, featured: true, material: "Terracotta", dimensions: "8″ H", care: "Hand wash" },
             { id: 5, name: "Morning Ritual Set", price: 124, maker: "Elena Wolf", makerId: 1, location: "Oregon", description: "Complete coffee set: mug + saucer + spoon rest.", images: ["https://images.pexels.com/photos/1628818/pexels-photo-1628818.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "sets", arEnabled: false, featured: true, material: "Stoneware", dimensions: "Gift boxed", care: "Dishwasher safe" },
             { id: 6, name: "Nordic Mug", price: 58, maker: "David Kim", makerId: 6, location: "California", description: "Minimalist porcelain mug with matte finish.", images: ["https://images.pexels.com/photos/2069054/pexels-photo-2069054.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "mugs", arEnabled: true, featured: false, material: "Porcelain", dimensions: "4″ H", care: "Microwave safe" },
             { id: 7, name: "Terracotta Planter", price: 45, maker: "Sophie Martin", makerId: 7, location: "Montreal", description: "Hand-thrown planter with drainage hole.", images: ["https://images.pexels.com/photos/1250485/pexels-photo-1250485.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "planters", arEnabled: true, featured: false, material: "Terracotta", dimensions: "6″ H", care: "Indoor use" },
             { id: 8, name: "Blue Speckled Mug", price: 52, maker: "Patricia Okafor", makerId: 5, location: "Georgia", description: "Hand-painted blue speckled mug.", images: ["https://images.pexels.com/photos/1412048/pexels-photo-1412048.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "mugs", arEnabled: true, featured: false, material: "Stoneware", dimensions: "4.2″ H", care: "Dishwasher safe" },
             { id: 9, name: "Pasta Bowl", price: 38, maker: "James Rivera", makerId: 2, location: "Vermont", description: "Deep bowl perfect for pasta or soup.", images: ["https://images.pexels.com/photos/1441124/pexels-photo-1441124.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "bowls", arEnabled: false, featured: false, material: "Stoneware", dimensions: "8″ D", care: "Microwave safe" },
-            { id: 10, name: "Dinner Plate Set", price: 120, maker: "Maya Chen", makerId: 3, location: "BC, Canada", description: "Set of 6 dinner plates, minimalist design.", images: ["https://images.pexels.com/photos/1049656/pexels-photo-1049656.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "sets", arEnabled: false, featured: false, material: "Porcelain", dimensions: "10″ D each", care: "Dishwasher safe" },
-            { id: 11, name: "Honey Pot", price: 32, maker: "Elena Wolf", makerId: 1, location: "Oregon", description: "Charming honey pot with wooden dipper.", images: ["https://images.pexels.com/photos/3755706/pexels-photo-3755706.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Stoneware", dimensions: "5″ H", care: "Hand wash" },
-            { id: 12, name: "Sake Set", price: 68, maker: "Yuki Tanaka", makerId: 9, location: "Washington", description: "Traditional Japanese sake set (1 bottle + 4 cups).", images: ["https://images.pexels.com/photos/1420705/pexels-photo-1420705.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "sets", arEnabled: true, featured: false, material: "Porcelain", dimensions: "Set of 5", care: "Hand wash" },
-            { id: 13, name: "Butter Dish", price: 35, maker: "Sophie Martin", makerId: 7, location: "Montreal", description: "Covered butter dish with textured finish.", images: ["https://images.pexels.com/photos/2786740/pexels-photo-2786740.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Stoneware", dimensions: "7″ L", care: "Dishwasher safe" },
-            { id: 14, name: "Espresso Cups", price: 45, maker: "Carlos Mendez", makerId: 8, location: "Texas", description: "Set of 4 colorful espresso cups.", images: ["https://images.pexels.com/photos/851555/pexels-photo-851555.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "mugs", arEnabled: true, featured: false, material: "Earthenware", dimensions: "2.5″ H", care: "Hand wash" },
-            { id: 15, name: "Zen Water Fountain", price: 145, maker: "David Kim", makerId: 6, location: "California", description: "Tabletop ceramic fountain for relaxation.", images: ["https://images.pexels.com/photos/210093/pexels-photo-210093.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "decor", arEnabled: true, featured: false, material: "Porcelain", dimensions: "10″ H", care: "Clean pump monthly" },
-            { id: 16, name: "Succulent Planter", price: 28, maker: "Luis Fernandez", makerId: 12, location: "Florida", description: "Small planter for succulents or cacti.", images: ["https://images.pexels.com/photos/1192358/pexels-photo-1192358.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "planters", arEnabled: true, featured: false, material: "Terracotta", dimensions: "3″ H", care: "Drainage hole included" },
-            { id: 17, name: "Teapot (32oz)", price: 89, maker: "Elena Wolf", makerId: 1, location: "Oregon", description: "Hand-thrown teapot with built-in strainer.", images: ["https://images.pexels.com/photos/1378460/pexels-photo-1378460.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: true, featured: true, material: "Stoneware", dimensions: "7″ H", care: "Hand wash" },
-            { id: 18, name: "Serving Platter", price: 65, maker: "Maya Chen", makerId: 3, location: "BC, Canada", description: "Large oval platter for entertaining.", images: ["https://images.pexels.com/photos/650235/pexels-photo-650235.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "plates", arEnabled: false, featured: false, material: "Porcelain", dimensions: "14″ L", care: "Dishwasher safe" },
-            { id: 19, name: "Salt Pig", price: 29, maker: "Marcus Williams", makerId: 10, location: "Illinois", description: "Kitchen salt cellar with lid.", images: ["https://images.pexels.com/photos/910876/pexels-photo-910876.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Stoneware", dimensions: "4″ H", care: "Hand wash" },
-            { id: 20, name: "Candle Holder", price: 24, maker: "Emma Thompson", makerId: 11, location: "Massachusetts", description: "Hand-carved candle holder for taper candles.", images: ["https://images.pexels.com/photos/437164/pexels-photo-437164.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "decor", arEnabled: true, featured: false, material: "Stoneware", dimensions: "3″ H", care: "Wipe clean" },
-            { id: 21, name: "Oil Cruet", price: 38, maker: "James Rivera", makerId: 2, location: "Vermont", description: "Olive oil dispenser with pour spout.", images: ["https://images.pexels.com/photos/1400140/pexels-photo-1400140.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Stoneware", dimensions: "6″ H", care: "Hand wash" },
-            { id: 22, name: "Fruit Bowl", price: 48, maker: "Patricia Okafor", makerId: 5, location: "Georgia", description: "Large ceramic fruit bowl with vibrant pattern.", images: ["https://images.pexels.com/photos/2786740/pexels-photo-2786740.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "bowls", arEnabled: true, featured: false, material: "Earthenware", dimensions: "9″ D", care: "Hand wash" },
-            { id: 23, name: "Coffee Dripper", price: 42, maker: "David Kim", makerId: 6, location: "California", description: "Pour-over coffee dripper (V60 style).", images: ["https://images.pexels.com/photos/851555/pexels-photo-851555.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Porcelain", dimensions: "4″ D", care: "Dishwasher safe" },
-            { id: 24, name: "Garlic Keeper", price: 26, maker: "Sophie Martin", makerId: 7, location: "Montreal", description: "Vented garlic storage jar.", images: ["https://images.pexels.com/photos/539451/pexels-photo-539451.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Stoneware", dimensions: "4″ H", care: "Hand wash" },
-            { id: 25, name: "Taco Holder", price: 34, maker: "Carlos Mendez", makerId: 8, location: "Texas", description: "Stand for 4 tacos, colorful design.", images: ["https://images.pexels.com/photos/103103/pexels-photo-103103.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Earthenware", dimensions: "6″ L", care: "Dishwasher safe" },
-            { id: 26, name: "Ring Dish", price: 18, maker: "Emma Thompson", makerId: 11, location: "Massachusetts", description: "Small dish for jewelry by the sink.", images: ["https://images.pexels.com/photos/1537423/pexels-photo-1537423.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "decor", arEnabled: false, featured: false, material: "Porcelain", dimensions: "3″ D", care: "Hand wash" },
-            { id: 27, name: "Trinket Box", price: 32, maker: "Sam Greywolf", makerId: 4, location: "New Mexico", description: "Small lidded box for treasures.", images: ["https://images.pexels.com/photos/194094/pexels-photo-194094.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "decor", arEnabled: false, featured: false, material: "Terracotta", dimensions: "3″ H", care: "Wipe clean" },
-            { id: 28, name: "Mortar & Pestle", price: 58, maker: "Marcus Williams", makerId: 10, location: "Illinois", description: "Functional ceramic mortar and pestle.", images: ["https://images.pexels.com/photos/1192358/pexels-photo-1192358.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Stoneware", dimensions: "5″ D", care: "Hand wash" },
-            { id: 29, name: "Yunomi Tea Cup", price: 24, maker: "Yuki Tanaka", makerId: 9, location: "Washington", description: "Traditional Japanese tea cup.", images: ["https://images.pexels.com/photos/1412048/pexels-photo-1412048.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "mugs", arEnabled: true, featured: false, material: "Porcelain", dimensions: "3″ H", care: "Hand wash" },
-            { id: 30, name: "Lidded Cookie Jar", price: 52, maker: "Elena Wolf", makerId: 1, location: "Oregon", description: "Large cookie jar with wooden lid.", images: ["https://images.pexels.com/photos/3755706/pexels-photo-3755706.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Stoneware", dimensions: "8″ H", care: "Hand wash" },
-            { id: 31, name: "Spoon Rest", price: 16, maker: "Maya Chen", makerId: 3, location: "BC, Canada", description: "Simple spoon rest for stovetop.", images: ["https://images.pexels.com/photos/650235/pexels-photo-650235.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: false, featured: false, material: "Porcelain", dimensions: "5″ L", care: "Dishwasher safe" },
-            { id: 32, name: "Bud Vase", price: 22, maker: "Sophie Martin", makerId: 7, location: "Montreal", description: "Small vase for single flower.", images: ["https://images.pexels.com/photos/1250485/pexels-photo-1250485.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "vases", arEnabled: true, featured: false, material: "Stoneware", dimensions: "4″ H", care: "Hand wash" },
-            { id: 33, name: "Sushi Set", price: 78, maker: "Yuki Tanaka", makerId: 9, location: "Washington", description: "Complete sushi set (plate + soy dishes + chopstick rest).", images: ["https://images.pexels.com/photos/1420705/pexels-photo-1420705.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "sets", arEnabled: true, featured: false, material: "Porcelain", dimensions: "Set of 7", care: "Hand wash" },
-            { id: 34, name: "Cream & Sugar", price: 38, maker: "James Rivera", makerId: 2, location: "Vermont", description: "Creamer and sugar bowl set.", images: ["https://images.pexels.com/photos/1441124/pexels-photo-1441124.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "sets", arEnabled: false, featured: false, material: "Stoneware", dimensions: "Set of 2", care: "Dishwasher safe" },
-            { id: 35, name: "Pitcher (64oz)", price: 72, maker: "Elena Wolf", makerId: 1, location: "Oregon", description: "Large serving pitcher for water or lemonade.", images: ["https://images.pexels.com/photos/1628818/pexels-photo-1628818.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: true, featured: false, material: "Stoneware", dimensions: "9″ H", care: "Dishwasher safe" }
+            { id: 10, name: "Teapot (32oz)", price: 89, maker: "Elena Wolf", makerId: 1, location: "Oregon", description: "Hand-thrown teapot with built-in strainer.", images: ["https://images.pexels.com/photos/1378460/pexels-photo-1378460.jpeg?auto=compress&cs=tinysrgb&w=400"], category: "kitchenware", arEnabled: true, featured: false, material: "Stoneware", dimensions: "7″ H", care: "Hand wash" }
         ];
 
         // ============ EXPANDED ARTISANS (15 Artisans) ============
         const expandedMakers = [
-            { id: 1, name: "Elena Wolf", location: "Portland, OR", specialty: "Wood-fired stoneware", experience: "15 years", avatar: "https://randomuser.me/api/portraits/women/68.jpg", story: "Elena discovered pottery while studying environmental science. She now runs a solar-powered studio where every piece is fired in a hand-built wood kiln." },
-            { id: 2, name: "James Rivera", location: "Burlington, VT", specialty: "Glaze alchemy", experience: "22 years", avatar: "https://randomuser.me/api/portraits/men/32.jpg", story: "Former chemist turned potter, known for developing unique crystalline glazes. His work is collected by galleries throughout the Northeast." },
-            { id: 3, name: "Maya Chen", location: "Vancouver, BC", specialty: "Minimalist slipware", experience: "8 years", avatar: "https://randomuser.me/api/portraits/women/44.jpg", story: "Blends traditional Chinese ceramic techniques with West Coast minimalism. Her work is defined by clean lines and subtle textures." },
-            { id: 4, name: "Sam Greywolf", location: "Santa Fe, NM", specialty: "Native inspired textures", experience: "30 years", avatar: "https://randomuser.me/api/portraits/men/52.jpg", story: "Cherokee descent, his pieces are held in permanent collections at the Heard Museum and IAIA." },
-            { id: 5, name: "Patricia Okafor", location: "Atlanta, GA", specialty: "Afrocentric patterns", experience: "12 years", avatar: "https://randomuser.me/api/portraits/women/89.jpg", story: "Celebrates African heritage through contemporary ceramic forms. Her vibrant patterns tell stories of diaspora and connection." },
-            { id: 6, name: "David Kim", location: "Los Angeles, CA", specialty: "Porcelain minimalism", experience: "18 years", avatar: "https://randomuser.me/api/portraits/men/45.jpg", story: "Zen-inspired pieces with perfect white porcelain. His work represents the beauty of simplicity and negative space." },
-            { id: 7, name: "Sophie Martin", location: "Montreal, QC", specialty: "Textured stoneware", experience: "10 years", avatar: "https://randomuser.me/api/portraits/women/23.jpg", story: "Creates pieces that feel like smooth river stones. Each piece is carved by hand to create unique organic textures." },
-            { id: 8, name: "Carlos Mendez", location: "Austin, TX", specialty: "Colorful maiolica", experience: "14 years", avatar: "https://randomuser.me/api/portraits/men/67.jpg", story: "Bright, hand-painted Italian-inspired ceramics. His work brings joy and color to every table." },
-            { id: 9, name: "Yuki Tanaka", location: "Seattle, WA", specialty: "Raku firing", experience: "20 years", avatar: "https://randomuser.me/api/portraits/women/56.jpg", story: "Master of the dramatic raku firing process. Each piece has unique crackle patterns and metallic lusters." },
-            { id: 10, name: "Marcus Williams", location: "Chicago, IL", specialty: "Sculptural vessels", experience: "9 years", avatar: "https://randomuser.me/api/portraits/men/91.jpg", story: "Functional art that doubles as sculpture. His pieces blur the line between pottery and fine art." },
-            { id: 11, name: "Emma Thompson", location: "Boston, MA", specialty: "Nerikomi", experience: "11 years", avatar: "https://randomuser.me/api/portraits/women/17.jpg", story: "Japanese marbling technique with colored clays. Each piece has a unique pattern that never repeats." },
-            { id: 12, name: "Luis Fernandez", location: "Miami, FL", specialty: "Caribbean inspired", experience: "7 years", avatar: "https://randomuser.me/api/portraits/men/33.jpg", story: "Bright colors and tropical patterns inspired by Caribbean culture and nature." },
-            { id: 13, name: "Anna Kowalski", location: "Detroit, MI", specialty: "Industrial chic", experience: "13 years", avatar: "https://randomuser.me/api/portraits/women/62.jpg", story: "Urban-inspired pieces with industrial aesthetic. Her work celebrates Detroit's manufacturing heritage." },
-            { id: 14, name: "Thomas Green", location: "Nashville, TN", specialty: "Southern folk", experience: "25 years", avatar: "https://randomuser.me/api/portraits/men/76.jpg", story: "Traditional southern pottery techniques passed down for 4 generations in his family." },
-            { id: 15, name: "Maria Flores", location: "Phoenix, AZ", specialty: "Desert colors", experience: "16 years", avatar: "https://randomuser.me/api/portraits/women/38.jpg", story: "Her glazes capture the stunning colors of the Sonoran Desert at sunset." }
+            { id: 1, name: "Elena Wolf", location: "Portland, OR", specialty: "Wood-fired stoneware", experience: "15 years", avatar: "https://randomuser.me/api/portraits/women/68.jpg", story: "Elena discovered pottery while studying environmental science. She now runs a solar-powered studio." },
+            { id: 2, name: "James Rivera", location: "Burlington, VT", specialty: "Glaze alchemy", experience: "22 years", avatar: "https://randomuser.me/api/portraits/men/32.jpg", story: "Former chemist turned potter, known for developing unique crystalline glazes." },
+            { id: 3, name: "Maya Chen", location: "Vancouver, BC", specialty: "Minimalist slipware", experience: "8 years", avatar: "https://randomuser.me/api/portraits/women/44.jpg", story: "Blends traditional Chinese ceramic techniques with West Coast minimalism." },
+            { id: 4, name: "Sam Greywolf", location: "Santa Fe, NM", specialty: "Native inspired textures", experience: "30 years", avatar: "https://randomuser.me/api/portraits/men/52.jpg", story: "Cherokee descent, his pieces are held in permanent collections at the Heard Museum." },
+            { id: 5, name: "Patricia Okafor", location: "Atlanta, GA", specialty: "Afrocentric patterns", experience: "12 years", avatar: "https://randomuser.me/api/portraits/women/89.jpg", story: "Celebrates African heritage through contemporary ceramic forms." },
+            { id: 6, name: "David Kim", location: "Los Angeles, CA", specialty: "Porcelain minimalism", experience: "18 years", avatar: "https://randomuser.me/api/portraits/men/45.jpg", story: "Zen-inspired pieces with perfect white porcelain." },
+            { id: 7, name: "Sophie Martin", location: "Montreal, QC", specialty: "Textured stoneware", experience: "10 years", avatar: "https://randomuser.me/api/portraits/women/23.jpg", story: "Creates pieces that feel like smooth river stones." },
+            { id: 8, name: "Carlos Mendez", location: "Austin, TX", specialty: "Colorful maiolica", experience: "14 years", avatar: "https://randomuser.me/api/portraits/men/67.jpg", story: "Bright, hand-painted Italian-inspired ceramics." },
+            { id: 9, name: "Yuki Tanaka", location: "Seattle, WA", specialty: "Raku firing", experience: "20 years", avatar: "https://randomuser.me/api/portraits/women/56.jpg", story: "Master of the dramatic raku firing process." },
+            { id: 10, name: "Marcus Williams", location: "Chicago, IL", specialty: "Sculptural vessels", experience: "9 years", avatar: "https://randomuser.me/api/portraits/men/91.jpg", story: "Functional art that doubles as sculpture." },
+            { id: 11, name: "Emma Thompson", location: "Boston, MA", specialty: "Nerikomi", experience: "11 years", avatar: "https://randomuser.me/api/portraits/women/17.jpg", story: "Japanese marbling technique with colored clays." },
+            { id: 12, name: "Luis Fernandez", location: "Miami, FL", specialty: "Caribbean inspired", experience: "7 years", avatar: "https://randomuser.me/api/portraits/men/33.jpg", story: "Bright colors and tropical patterns." },
+            { id: 13, name: "Anna Kowalski", location: "Detroit, MI", specialty: "Industrial chic", experience: "13 years", avatar: "https://randomuser.me/api/portraits/women/62.jpg", story: "Urban-inspired pieces with industrial aesthetic." },
+            { id: 14, name: "Thomas Green", location: "Nashville, TN", specialty: "Southern folk", experience: "25 years", avatar: "https://randomuser.me/api/portraits/men/76.jpg", story: "Traditional southern pottery techniques passed down for 4 generations." },
+            { id: 15, name: "Maria Flores", location: "Phoenix, AZ", specialty: "Desert colors", experience: "16 years", avatar: "https://randomuser.me/api/portraits/women/38.jpg", story: "Her glazes capture the stunning colors of the Sonoran Desert." }
         ];
 
-        // Add helper functions
         function getProductsByMaker(makerId) {
             return allProducts.filter(p => p.makerId === makerId);
         }
@@ -613,7 +650,7 @@
                 <p><strong>Price:</strong> $${product.price}</p>
                 <p><strong>Maker:</strong> ${product.maker}</p>
                 <p><strong>Location:</strong> ${product.location}</p>
-                <p><strong>Description:</strong> ${product.longDescription || product.description}</p>
+                <p><strong>Description:</strong> ${product.description}</p>
                 <p><strong>Materials:</strong> ${product.material}</p>
                 <p><strong>Dimensions:</strong> ${product.dimensions}</p>
                 <p><strong>Care:</strong> ${product.care}</p>
@@ -662,6 +699,149 @@
         
         function closeCheckoutModal() {
             document.getElementById('checkout-modal').style.display = 'none';
+        }
+        
+        function closeCommissionModal() {
+            document.getElementById('commission-modal').style.display = 'none';
+        }
+        
+        function openCommissionForm() {
+            const formHtml = `
+                <form id="commission-form" onsubmit="submitCommission(event)">
+                    <div class="form-group">
+                        <label>Full Name <span class="required">*</span></label>
+                        <input type="text" id="commission-name" required placeholder="Enter your full name">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Email <span class="required">*</span></label>
+                            <input type="email" id="commission-email" required placeholder="your@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone <span class="required">*</span></label>
+                            <input type="tel" id="commission-phone" required placeholder="(555) 123-4567">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Preferred Artisan <span class="required">*</span></label>
+                        <select id="commission-artisan" class="artisan-select" required>
+                            <option value="">Select an artisan...</option>
+                            ${expandedMakers.map(maker => `<option value="${maker.id}">${maker.name} - ${maker.specialty} (${maker.location})</option>`).join('')}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Type of Piece <span class="required">*</span></label>
+                        <select id="commission-type" required>
+                            <option value="">Select piece type...</option>
+                            <option value="mug">Mug / Cup</option>
+                            <option value="bowl">Bowl</option>
+                            <option value="plate">Plate / Platter</option>
+                            <option value="vase">Vase</option>
+                            <option value="teapot">Teapot</option>
+                            <option value="set">Dinner Set</option>
+                            <option value="sculpture">Sculptural Piece</option>
+                            <option value="other">Other (specify below)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Budget Range <span class="required">*</span></label>
+                        <select id="commission-budget" required>
+                            <option value="">Select budget...</option>
+                            <option value="150-300">$150 - $300</option>
+                            <option value="300-500">$300 - $500</option>
+                            <option value="500-1000">$500 - $1,000</option>
+                            <option value="1000+">$1,000+</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Preferred Timeline</label>
+                        <select id="commission-timeline">
+                            <option value="asap">As soon as possible</option>
+                            <option value="1-2months">1-2 months</option>
+                            <option value="2-3months">2-3 months</option>
+                            <option value="3-6months">3-6 months</option>
+                            <option value="flexible">Flexible</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Project Description <span class="required">*</span></label>
+                        <textarea id="commission-description" required placeholder="Describe what you're looking for... size, color, style, inspiration, etc."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Reference Images (URLs)</label>
+                        <input type="text" id="commission-images" placeholder="Paste image URLs (separate with commas)">
+                        <small style="color: #8e6e58;">Paste links to inspiration images (Pinterest, Google Drive, etc.)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="commission-newsletter" checked>
+                            Subscribe to our newsletter for artisan updates
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="commission-terms" required>
+                            I agree to the <a href="#" style="color: #b87c4f;">terms and conditions</a> <span class="required">*</span>
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-paper-plane"></i> Submit Commission Request
+                    </button>
+                    
+                    <p style="text-align: center; margin-top: 1rem; font-size: 0.8rem; color: #8e6e58;">
+                        <i class="fas fa-lock"></i> Your information is secure. We'll respond within 48 hours.
+                    </p>
+                </form>
+            `;
+            document.getElementById('commission-form-content').innerHTML = formHtml;
+            document.getElementById('commission-modal').style.display = 'flex';
+        }
+        
+        function submitCommission(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('commission-name')?.value;
+            const email = document.getElementById('commission-email')?.value;
+            const artisanId = document.getElementById('commission-artisan')?.value;
+            const pieceType = document.getElementById('commission-type')?.value;
+            const budget = document.getElementById('commission-budget')?.value;
+            const description = document.getElementById('commission-description')?.value;
+            
+            const artisan = expandedMakers.find(m => m.id == artisanId);
+            
+            // Show success message
+            const successHtml = `
+                <div class="form-success">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>Thank You, ${name}!</h3>
+                    <p>Your commission request has been sent to ${artisan ? artisan.name : 'our team'}.</p>
+                    <p style="margin-top: 1rem;">We'll review your request and get back to you within 48 hours at <strong>${email}</strong>.</p>
+                    <div style="margin-top: 2rem; padding: 1rem; background: #f0e4d8; border-radius: 16px;">
+                        <p><strong>Summary:</strong></p>
+                        <p>Piece Type: ${pieceType.replace('-', ' ').toUpperCase()}</p>
+                        <p>Budget: ${budget}</p>
+                        <p>Artisan: ${artisan ? artisan.name : 'Best match'}</p>
+                    </div>
+                    <button class="btn btn-primary" style="margin-top: 2rem;" onclick="closeCommissionModal(); loadPage('home');">
+                        <i class="fas fa-home"></i> Return to Home
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('commission-form-content').innerHTML = successHtml;
+            
+            // Log to console
+            console.log('Commission submitted:', { name, email, artisanId, pieceType, budget, description });
         }
         
         function renderCartModal() {
@@ -742,17 +922,7 @@
                 return '<div class="loading">No products found.</div>';
             }
             
-            let filterHtml = '';
-            if (showFilter) {
-                const categories = ['all', 'mugs', 'bowls', 'plates', 'vases', 'sets', 'kitchenware', 'decor', 'planters'];
-                filterHtml = `
-                    <div class="filter-buttons">
-                        ${categories.map(cat => `<button class="filter-btn ${cat === 'all' ? 'active' : ''}" data-category="${cat}">${cat.charAt(0).toUpperCase() + cat.slice(1)}</button>`).join('')}
-                    </div>
-                `;
-            }
-            
-            return filterHtml + `
+            return `
                 <div class="grid">
                     ${products.map(product => `
                         <div class="card" data-category="${product.category}">
@@ -837,39 +1007,9 @@
             },
             
             collections: function() {
-                let currentCategory = 'all';
-                const renderCollection = (category) => {
-                    const filtered = getProductsByCategory(category);
-                    document.getElementById('collection-grid').innerHTML = renderProductGrid(filtered, false);
-                    document.querySelectorAll('.filter-btn').forEach(btn => {
-                        if (btn.dataset.category === category) {
-                            btn.classList.add('active');
-                        } else {
-                            btn.classList.remove('active');
-                        }
-                    });
-                };
-                
-                setTimeout(() => {
-                    const filterContainer = document.querySelector('.filter-buttons');
-                    if (filterContainer) {
-                        filterContainer.querySelectorAll('.filter-btn').forEach(btn => {
-                            btn.onclick = () => {
-                                currentCategory = btn.dataset.category;
-                                renderCollection(currentCategory);
-                            };
-                        });
-                    }
-                }, 100);
-                
                 return `
                     <div class="container">
                         <h1 class="section-title">All Collections (${allProducts.length} pieces)</h1>
-                        <div class="filter-buttons">
-                            ${['all', 'mugs', 'bowls', 'plates', 'vases', 'sets', 'kitchenware', 'decor', 'planters'].map(cat => 
-                                `<button class="filter-btn ${cat === 'all' ? 'active' : ''}" data-category="${cat}">${cat.charAt(0).toUpperCase() + cat.slice(1)} (${getProductsByCategory(cat).length})</button>`
-                            ).join('')}
-                        </div>
                         <div id="collection-grid">${renderProductGrid(allProducts, false)}</div>
                     </div>
                 `;
@@ -903,7 +1043,9 @@
                                 <p><strong>Timeline:</strong> 4-16 weeks depending on complexity</p>
                                 <p><strong>Starting budget:</strong> $150+</p>
                                 <p><strong>Available Artisans:</strong> ${expandedMakers.filter(m => [1,2,4,5,6,7,8,9,10,11,12,13,14,15].includes(m.id)).length} artisans accept custom commissions</p>
-                                <button class="btn btn-primary" style="margin-top: 2rem; width: 100%;" id="start-custom">Start Your Commission →</button>
+                                <button class="btn btn-primary" style="margin-top: 2rem; width: 100%;" id="start-custom-btn">
+                                    <i class="fas fa-pen-ruler"></i> Start Your Commission →
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -943,13 +1085,6 @@
                                     <li>${allProducts.length} unique handcrafted pieces</li>
                                     <li>${getARProducts().length} AR-enabled items</li>
                                     <li>15+ North American locations</li>
-                                </ul>
-                                <h3>Our Values</h3>
-                                <ul style="margin: 1rem 0 1rem 2rem;">
-                                    <li>Support living wage for artists</li>
-                                    <li>Sustainable materials and practices</li>
-                                    <li>Carbon-neutral shipping</li>
-                                    <li>Community workshops and education</li>
                                 </ul>
                             </div>
                         </div>
@@ -1051,13 +1186,10 @@
                 };
             });
             
-            const customBtn = document.getElementById('start-custom');
+            const customBtn = document.getElementById('start-custom-btn');
             if (customBtn) {
                 customBtn.onclick = () => {
-                    showToast('📋 Custom commission request sent! An artisan will contact you within 48 hours.');
-                    setTimeout(() => {
-                        showToast('✨ Check your email for next steps!');
-                    }, 2000);
+                    openCommissionForm();
                 };
             }
         }
@@ -1068,6 +1200,10 @@
         window.closeProductModal = closeProductModal;
         window.closeCartModal = closeCartModal;
         window.closeCheckoutModal = closeCheckoutModal;
+        window.closeCommissionModal = closeCommissionModal;
+        window.submitCommission = submitCommission;
+        window.openCommissionForm = openCommissionForm;
+        window.loadPage = loadPage;
         
         // Cart modal handlers
         const cartIcon = document.getElementById('cart-icon');
@@ -1079,31 +1215,38 @@
             cartModal.style.display = 'flex';
         };
         
-        document.getElementById('checkout-btn').onclick = () => {
-            if (cart.length === 0) {
-                showToast('Your cart is empty!');
-            } else {
-                cartModal.style.display = 'none';
-                checkoutModal.style.display = 'flex';
-            }
-        };
+        const checkoutBtn = document.getElementById('checkout-btn');
+        if (checkoutBtn) {
+            checkoutBtn.onclick = () => {
+                if (cart.length === 0) {
+                    showToast('Your cart is empty!');
+                } else {
+                    cartModal.style.display = 'none';
+                    checkoutModal.style.display = 'flex';
+                }
+            };
+        }
         
-        document.getElementById('checkout-form').onsubmit = (e) => {
-            e.preventDefault();
-            const name = document.getElementById('full-name')?.value;
-            if (name) {
-                showToast(`🎉 Thank you ${name}! Your order has been placed.`);
-                cart = [];
-                updateCartCount();
-                checkoutModal.style.display = 'none';
-                loadPage('home');
-            }
-        };
+        const checkoutForm = document.getElementById('checkout-form');
+        if (checkoutForm) {
+            checkoutForm.onsubmit = (e) => {
+                e.preventDefault();
+                const name = document.getElementById('full-name')?.value;
+                if (name) {
+                    showToast(`🎉 Thank you ${name}! Your order has been placed.`);
+                    cart = [];
+                    updateCartCount();
+                    checkoutModal.style.display = 'none';
+                    loadPage('home');
+                }
+            };
+        }
         
         window.onclick = (e) => {
             if (e.target === cartModal) cartModal.style.display = 'none';
             if (e.target === checkoutModal) checkoutModal.style.display = 'none';
             if (e.target === document.getElementById('product-modal')) closeProductModal();
+            if (e.target === document.getElementById('commission-modal')) closeCommissionModal();
         };
         
         // Load home page
